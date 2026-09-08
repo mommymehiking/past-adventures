@@ -106,8 +106,15 @@ footer{margin-top:40px;color:#9aa1a9;font-size:13px}
   // mockup, whose origin is "null" and could not be named in advance anyway.
   function reportHeight() {
     if (window.parent === window) return;
-    window.parent.postMessage(
-      { type: 'past-trips-height', height: document.documentElement.scrollHeight }, '*');
+    // The CONTENT's height, not the document's. scrollHeight is at least the viewport,
+    // and the viewport here is the iframe the host is about to resize -- so reporting it
+    // makes the frame grow, which grows the viewport, which reports a larger height
+    // again, all the way to whatever ceiling the host clamps at. Measuring the wrapper
+    // does not move when the frame does, so the loop settles on the first message.
+    var wrap = document.querySelector('.wrap');
+    if (!wrap) return;
+    var height = Math.ceil(wrap.getBoundingClientRect().height) + 48;  // body padding, both ends
+    window.parent.postMessage({ type: 'past-trips-height', height: height }, '*');
   }
   window.addEventListener('load', reportHeight);
   window.addEventListener('resize', reportHeight);
