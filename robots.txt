@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://mommymehiking.github.io/past-adventures/sitemap.xml
