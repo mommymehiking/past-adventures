@@ -100,6 +100,20 @@ footer{margin-top:40px;color:#9aa1a9;font-size:13px}
     clear.style.display = keys.length ? 'inline' : 'none';
   }
 
+  // An embedding page cannot measure a cross-origin iframe, so this says how tall it is
+  // and lets the host size the frame. Sent to any origin: it carries one number and no
+  // content, and the embedding page may be served from anywhere -- including a file://
+  // mockup, whose origin is "null" and could not be named in advance anyway.
+  function reportHeight() {
+    if (window.parent === window) return;
+    window.parent.postMessage(
+      { type: 'past-trips-height', height: document.documentElement.scrollHeight }, '*');
+  }
+  window.addEventListener('load', reportHeight);
+  window.addEventListener('resize', reportHeight);
+  // Opening a description or filtering the grid changes the height too.
+  document.addEventListener('toggle', reportHeight, true);
+
   chips.forEach(function (chip) {
     chip.addEventListener('click', function () {
       var key = chip.getAttribute('data-facet');
@@ -109,6 +123,7 @@ footer{margin-top:40px;color:#9aa1a9;font-size:13px}
       if (at === -1) { chosen.push(value); chip.setAttribute('aria-pressed', 'true'); }
       else { chosen.splice(at, 1); chip.setAttribute('aria-pressed', 'false'); }
       apply();
+      reportHeight();
     });
   });
   clear.addEventListener('click', function () {
